@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.miljana.v2ray">
+
+<!--    <application>-->
+<!--        <service-->
+<!--            android:name=".core.V2RayVpnService2"-->
+<!--            android:exported="false"-->
+<!--            android:label="V2RayTest"-->
+<!--            android:permission="android.permission.BIND_VPN_SERVICE"-->
+<!--            android:process=":RunSoLibV2RayDaemon">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.net.VpnService" />-->
+<!--            </intent-filter>-->
+<!--            <meta-data-->
+<!--                android:name="android.net.VpnService.SUPPORTS_ALWAYS_ON"-->
+<!--                android:value="true" />-->
+<!--        </service>-->
+<!--    </application>-->
+
+</manifest>
