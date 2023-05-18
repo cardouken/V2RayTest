@@ -7,6 +7,7 @@ import android.net.LocalSocketAddress
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.util.Log
 import com.miljana.v2ray.interfaces.V2rayServicesListener
 import com.miljana.v2ray.utils.AppConfigs
 import com.miljana.v2ray.utils.V2RayConfig
@@ -25,7 +26,7 @@ class V2RayVpnService2 : VpnService(), V2rayServicesListener {
         private const val PRIVATE_VLAN6_CLIENT = "da26:2626::1"
         private const val PRIVATE_VLAN6_ROUTER = "da26:2626::2"
         private const val PRIVATE_VPN_ROUTE = "0.0.0.0"
-        private const val TUN2SOCKS = "tun2socks.aar"
+        private const val TUN2SOCKS = "libtun2socks.so"
     }
 
     private var mInterface: ParcelFileDescriptor? = null
@@ -140,22 +141,37 @@ class V2RayVpnService2 : VpnService(), V2rayServicesListener {
             isRunning = true
             runTun2socks()
         } catch (e: java.lang.Exception) {
-            stopAllProcess()
+//            stopAllProcess() // TODO idk wtf what its catching my debugger is broken
         }
     }
 
     private fun runTun2socks() {
         Timber.e("runTun2socks => invoked")
+        val tun2socksPath = File(applicationInfo.nativeLibraryDir, TUN2SOCKS).absolutePath
+        val tun2socksDestPath = File(applicationContext.filesDir, TUN2SOCKS).absolutePath
+        val sourceFile = File(tun2socksPath)
+        val destFile = File(tun2socksDestPath)
+        sourceFile.copyTo(destFile, overwrite = true)
+        destFile.setExecutable(true, false)
+
+        Timber.tag("Tun2socksPath").d("Path to tun2socks: %s", tun2socksPath)
         val socksPort = v2RayConfig?.LOCAL_SOCKS5_PORT
         val cmd = arrayListOf(
-            File(applicationInfo.nativeLibraryDir, TUN2SOCKS).absolutePath,
-            "--netif-ipaddr", PRIVATE_VLAN4_ROUTER,
-            "--netif-netmask", "255.255.255.252",
-            "--socks-server-addr", "127.0.0.1:${socksPort}",
-            "--tunmtu", VPN_MTU.toString(),
-            "--sock-path", "sock_path",//File(applicationContext.filesDir, "sock_path").absolutePath,
+            tun2socksDestPath,
+            "--netif-ipaddr",
+            PRIVATE_VLAN4_ROUTER,
+            "--netif-netmask",
+            "255.255.255.252",
+            "--socks-server-addr",
+            "127.0.0.1:${socksPort}",
+            "--tunmtu",
+            VPN_MTU.toString(),
+            "--sock-path",
+            "sock_path",//File(applicationContext.filesDir, "sock_path").absolutePath,
             "--enable-udprelay",
-            "--loglevel", "error")
+            "--loglevel",
+            "error"
+        )
 
         /*if (settingsStorage?.decodeBool(AppConfig.PREF_PREFER_IPV6) == true) {
             cmd.add("--netif-ip6addr")
@@ -179,11 +195,11 @@ class V2RayVpnService2 : VpnService(), V2rayServicesListener {
             process?.let {
                 Thread(Runnable {
                     try {
-                        Timber.d(packageName,"$TUN2SOCKS check")
+                        Timber.d(packageName, "$TUN2SOCKS check")
                         it.waitFor()
-                        Timber.d(packageName,"$TUN2SOCKS exited")
+                        Timber.d(packageName, "$TUN2SOCKS exited")
                         if (isRunning) {
-                            Timber.d(packageName,"$TUN2SOCKS restart")
+                            Timber.d(packageName, "$TUN2SOCKS restart")
                             runTun2socks()
                         }
                     } catch (e: InterruptedException) {

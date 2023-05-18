@@ -32,7 +32,7 @@ class V2RayRepositoryImpl {
     }
 
     fun startV2Ray(context: Context) {
-        val v2rayConfig = Utils.readTextFromAssets(context, "v2ray_config_ng.json")
+        val v2rayConfig = Utils.readTextFromAssets(context, "v2ray_config_ng2.json")
         AppConfigs.V2RAY_CONFIG = Utils.parseV2rayJsonFile(v2rayConfig)
         if (AppConfigs.V2RAY_CONFIG == null) {
             return
